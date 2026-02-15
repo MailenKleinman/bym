@@ -74,56 +74,57 @@ function StartScreen({ onStart }) {
       <button className="start-btn" onClick={onStart}>
         START
       </button>
-      <div className="start-caption">Press the space bar to collect hearts.</div>
+      <div className="start-caption">Presionar barra espaciadora para recolectar corazones</div>
+      <div className="start-caption2">Para Bauti de Mai - 15.02.2026</div>
     </div>
   );
 }
 
 const MODALS = [
   {
-    title: 'Where it all began',
+    title: 'Donde todo empezó',
     image: '/images/modal-1.png',
-    text: 'This is the place where we first met.',
+    text: '1000 cafecitos y viajes a la dietética me hicieron darme cuenta que me gustabas',
   },
   {
-    title: 'Our favorite bar',
+    title: 'El día que clickeamos',
     image: '/images/modal-2.png',
-    text: 'Where we shared our best conversations over a cold beer.',
+    text: 'Logré convencerte de hacer tiempo en un barcito y hablamos muchas horas en un bar',
   },
   {
-    title: 'Our first trip together',
+    title: 'Sorteamos 1000 desafíos',
     image: '/images/modal-3.png',
-    text: 'The adventure that brought us even closer.',
+    text: 'Bajo circunstancias no tan lindas, nos reencontramos en Barcelona y nos pusimos de novios oficialmente',
   },
   {
-    title: 'Home',
+    title: 'Conocí Rada Tilly',
     image: '/images/modal-4.png',
-    text: 'Where we built our little world together.',
+    text: 'Y con eso... tu mundo, tus personas, tu hogar y lo que te hacía feliz',
   },
   {
-    title: 'Our wild rides',
+    title: 'Aprendí a amarte',
     image: '/images/modal-5.png',
-    text: 'Adventures on two wheels, chasing the horizon together.',
+    text: 'Tuve que aceptar muchas cosas A REGAÑADIENTES',
   },
   {
-    title: 'You',
+    title: 'Aprendiste a amarme',
     image: '/images/modal-6.png',
-    text: 'Every road leads me back to you. Happy anniversary, Mai.',
+    text: 'Me bancaste en mis 48345 crisis, llantos y estreses REPETIDAS veces',
   },
   {
-    title: 'GoSharp',
+    title: 'Nos potenciamos constantemente',
     image: '/images/modal-7.png',
-    text: 'Where we work side by side, building something great together.',
+    text: 'Y entre los dos construimos, inventamos, aprendimos y nos volvimos mejores',
   },
   {
-    title: 'Our place',
+    title: 'Y ahora llega otra etapa',
     image: '/images/modal-8.png',
-    text: 'The place we call ours.',
+    text: 'En donde vamos a armar nuestra casita y nuestra nueva vida, ¡y eso me hace muy feliz!',
   },
   {
-    title: 'Happy Anniversary!',
+    title: '¡Feliz aniversario!',
     image: '/images/modal-9.png',
-    text: 'This is just the beginning. I love you, Bauti.',
+    text: 'Esto es solo el principio, no puedo esperar a todo lo que vamos a vivir. Te amo mucho amor.',
   },
 ];
 

@@ -103,6 +103,13 @@ canvas {
   opacity: 0.7;
 }
 
+.start-caption2 {
+  font-size: 0.55rem;
+  color: #ffffff;
+  margin-top: 50px;
+  z-index: 2;
+  opacity: 0.7;
+}
 /* ── Hearts decoration ── */
 .hearts-container {
   position: absolute;
