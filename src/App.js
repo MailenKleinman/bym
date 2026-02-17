@@ -84,17 +84,17 @@ const MODALS = [
   {
     title: 'Donde todo empezó',
     image: '/images/modal-1.png',
-    text: '1000 cafecitos y viajes a la dietética me hicieron darme cuenta que me gustabas',
+    text: '1000 cafecitos y viajes a la dietética con la excusa de que me dieras bola',
   },
   {
     title: 'El día que clickeamos',
     image: '/images/modal-2.png',
-    text: 'Logré convencerte de hacer tiempo en un barcito y hablamos muchas horas en un bar',
+    text: 'Hicimos tiempo en un barcito y hablamos muchas horas en un bar, ese día confirmé que gustabas de mi :)',
   },
   {
     title: 'Sorteamos 1000 desafíos',
     image: '/images/modal-3.png',
-    text: 'Bajo circunstancias no tan lindas, nos reencontramos en Barcelona y nos pusimos de novios oficialmente',
+    text: 'Bajo circunstancias no tan lindas, nos reencontramos en Barcelona y nos pusimos de novios oficialmente. Sabíamos que esta vez... iba en serio.',
   },
   {
     title: 'Conocí Rada Tilly',
@@ -104,12 +104,12 @@ const MODALS = [
   {
     title: 'Aprendí a amarte',
     image: '/images/modal-5.png',
-    text: 'Tuve que aceptar muchas cosas A REGAÑADIENTES',
+    text: 'Tuve que aceptar muchas cosas A REGAÑADIENTES jaja',
   },
   {
     title: 'Aprendiste a amarme',
     image: '/images/modal-6.png',
-    text: 'Me bancaste en mis 48345 crisis, llantos y estreses REPETIDAS veces',
+    text: 'Pero vos también supiste bancarme en mis 48345 crisis, llantos y estreses TANTAS veces',
   },
   {
     title: 'Nos potenciamos constantemente',
@@ -122,7 +122,7 @@ const MODALS = [
     text: 'En donde vamos a armar nuestra casita y nuestra nueva vida, ¡y eso me hace muy feliz!',
   },
   {
-    title: '¡Ganaste!',
+    title: '¡Llegaste al final! (del juego ehhh)',
     image: '/images/modal-9.png',
     text: 'Esto es solo el principio, no puedo esperar a ver todo lo que nos depara ¡Te amo mucho!',
   },
