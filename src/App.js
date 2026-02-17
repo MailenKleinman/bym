@@ -74,7 +74,7 @@ function StartScreen({ onStart }) {
       <button className="start-btn" onClick={onStart}>
         START
       </button>
-      <div className="start-caption">Presionar barra espaciadora para recolectar corazones</div>
+      <div className="start-caption">Presionar barra espaciadora para recolectar corazones y esquivar conos</div>
       <div className="start-caption2">Para Bauti de Mai - 15.02.2026</div>
     </div>
   );
@@ -122,13 +122,13 @@ const MODALS = [
     text: 'En donde vamos a armar nuestra casita y nuestra nueva vida, ¡y eso me hace muy feliz!',
   },
   {
-    title: '¡Feliz aniversario!',
+    title: '¡Ganaste!',
     image: '/images/modal-9.png',
     text: 'Esto es solo el principio, no puedo esperar a todo lo que vamos a vivir. Te amo mucho amor.',
   },
 ];
 
-function StoryModal({ stageIndex, onClose }) {
+function StoryModal({ stageIndex, onClose, totalHearts, totalLives }) {
   const modal = MODALS[stageIndex] || MODALS[0];
   const isLast = stageIndex >= MODALS.length - 1;
 
@@ -140,8 +140,28 @@ function StoryModal({ stageIndex, onClose }) {
           <img src={process.env.PUBLIC_URL + modal.image} alt={modal.title} />
         </div>
         <div className="modal-text">{modal.text}</div>
+        {isLast && (
+          <div className="modal-stats">
+            <span className="modal-stat-hearts">{'\u2764'} {totalHearts}</span>
+            <span className="modal-stat-lives">{'\u2666'} {totalLives}</span>
+          </div>
+        )}
         <button className="modal-btn" onClick={onClose}>
-          {isLast ? 'Fin ❤' : 'Continue...'}
+          {isLast ? 'Fin ❤' : 'Continuar...'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function GameOverModal({ onRestart }) {
+  return (
+    <div className="modal-overlay" onClick={onRestart}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-title">¡Perdiste!</div>
+        <div className="modal-text">Pero conmigo siempre tenés otra vida ❤️</div>
+        <button className="modal-btn" onClick={onRestart}>
+          Reiniciar
         </button>
       </div>
     </div>
@@ -149,13 +169,17 @@ function StoryModal({ stageIndex, onClose }) {
 }
 
 function App() {
-  const [phase, setPhase] = useState('start'); // 'start' | 'walking' | 'arrived'
+  const [phase, setPhase] = useState('start'); // 'start' | 'walking' | 'arrived' | 'gameover'
   const [stage, setStage] = useState(0); // which destination (0 = shop, 1 = bar, ...)
   const [showModal, setShowModal] = useState(false);
+  const [totalHearts, setTotalHearts] = useState(0);
+  const [totalLives, setTotalLives] = useState(0);
 
   const handleStart = () => setPhase('walking');
 
-  const handleArrive = () => {
+  const handleArrive = ({ hearts, lives }) => {
+    setTotalHearts((prev) => prev + hearts);
+    setTotalLives(lives);
     setPhase('arrived');
     setTimeout(() => setShowModal(true), 600);
   };
@@ -169,15 +193,29 @@ function App() {
     }
   };
 
+  const handleGameOver = () => {
+    setPhase('gameover');
+  };
+
+  const handleRestart = () => {
+    setStage(0);
+    setShowModal(false);
+    setTotalHearts(0);
+    setTotalLives(0);
+    setPhase('start');
+  };
+
   return (
     <div className="game-container">
       {phase === 'start' && <StartScreen onStart={handleStart} />}
 
       {(phase === 'walking' || phase === 'arrived') && (
-        <Game stage={stage} onArrive={handleArrive} />
+        <Game stage={stage} onArrive={handleArrive} onGameOver={handleGameOver} totalHearts={totalHearts} />
       )}
 
-      {showModal && <StoryModal stageIndex={stage} onClose={handleCloseModal} />}
+      {showModal && <StoryModal stageIndex={stage} onClose={handleCloseModal} totalHearts={totalHearts} totalLives={totalLives} />}
+
+      {phase === 'gameover' && <GameOverModal onRestart={handleRestart} />}
     </div>
   );
 }

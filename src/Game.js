@@ -13,6 +13,7 @@ import {
   drawGround,
   drawBackground,
   drawLampPost,
+  drawCone,
 } from './pixelArt';
 
 const SCALE = 3;
@@ -20,14 +21,22 @@ const CANVAS_W = 800;
 const CANVAS_H = 400;
 const CHAR_Y_BASE = CANVAS_H - 6 * SCALE - 21 * SCALE; // ground minus char height
 const CHAR_X = 100; // character stays at a fixed screen X
-const WALK_SPEED = 1.8;
+const WALK_SPEED = 4.5;
 const LAMP_SPACING = 300;
 const JUMP_VELOCITY = -7;
-const GRAVITY = 0.35;
+const DOUBLE_JUMP_VELOCITY = -9;
+const GRAVITY = 0.45;
 const HEART_SPACING = 180;
 const HEART_Y = CHAR_Y_BASE - 55; // floating height — reachable by jumping
 const CHAR_W = 15 * SCALE;
 const CHAR_H = 21 * SCALE;
+const CONE_SPACING = 220;
+const CONE_W = 7 * SCALE;
+const CONE_H = 8 * SCALE;
+const CONE_Y = CANVAS_H - 6 * SCALE - CONE_H; // sits on ground
+const INITIAL_LIVES = 5;
+const INVINCIBILITY_FRAMES = 90; // frames of invincibility after losing a life
+const TARGET_FRAME_MS = 1000 / 60; // baseline: 60fps
 
 // Draw the girl waiting at the destination (animated idle)
 let girlFrame = 0;
@@ -113,7 +122,22 @@ function generateHearts(count = 9) {
   return hearts;
 }
 
-export default function Game({ stage = 0, onArrive }) {
+// Generate cones spread across the full path with random offsets
+function generateCones(count = 4, pathLength = 1700) {
+  const cones = [];
+  const zoneSize = pathLength / count;
+  for (let i = 0; i < count; i++) {
+    const zoneStart = i * zoneSize + 100; // 100px initial offset
+    const pos = zoneStart + Math.random() * (zoneSize * 0.6);
+    cones.push({
+      worldX: pos,
+      hit: false,
+    });
+  }
+  return cones;
+}
+
+export default function Game({ stage = 0, onArrive, onGameOver, totalHearts = 0 }) {
   const canvasRef = useRef(null);
   const [arrived, setArrived] = useState(false);
   const [score, setScore] = useState(0);
@@ -124,9 +148,15 @@ export default function Game({ stage = 0, onArrive }) {
   const jumpVelRef = useRef(0);
   const jumpOffsetRef = useRef(0);
   const isGroundedRef = useRef(true);
+  const canDoubleJumpRef = useRef(true);
   const stageConf = STAGES[stage] || STAGES[0];
   const heartsRef = useRef(generateHearts(stageConf.heartCount));
+  const conesRef = useRef(generateCones());
   const scoreRef = useRef(0);
+  const livesRef = useRef(INITIAL_LIVES);
+  const [lives, setLives] = useState(INITIAL_LIVES);
+  const invincibleRef = useRef(0);
+  const lastTimeRef = useRef(null);
   const stageRef = useRef(stage);
 
   // Reset state when stage changes
@@ -141,45 +171,76 @@ export default function Game({ stage = 0, onArrive }) {
       jumpOffsetRef.current = 0;
       isGroundedRef.current = true;
       heartsRef.current = generateHearts(STAGES[stage]?.heartCount || 9);
+      conesRef.current = generateCones();
+      scoreRef.current = 0;
+      setScore(0);
+      invincibleRef.current = 0;
+      lastTimeRef.current = null;
     }
   }, [stage]);
 
-  // Spacebar jump handler
+  // Jump handler (spacebar + touch)
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.code === 'Space' && isGroundedRef.current && !arrivedRef.current) {
-        e.preventDefault();
+    const jump = () => {
+      if (arrivedRef.current) return;
+      if (isGroundedRef.current) {
         jumpVelRef.current = JUMP_VELOCITY;
         isGroundedRef.current = false;
+        canDoubleJumpRef.current = true;
+      } else if (canDoubleJumpRef.current) {
+        jumpVelRef.current = DOUBLE_JUMP_VELOCITY;
+        canDoubleJumpRef.current = false;
       }
     };
+    const handleKeyDown = (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        jump();
+      }
+    };
+    const handleTouch = (e) => {
+      e.preventDefault();
+      jump();
+    };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('touchstart', handleTouch, { passive: false });
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('touchstart', handleTouch);
+    };
   }, []);
 
-  const gameLoop = useCallback(() => {
+  const gameLoop = useCallback((timestamp) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
+    // Delta-time: dt = 1.0 at 60fps, scales proportionally on other refresh rates
+    if (lastTimeRef.current === null) lastTimeRef.current = timestamp;
+    const elapsed = timestamp - lastTimeRef.current;
+    lastTimeRef.current = timestamp;
+    // Clamp dt to avoid huge jumps (e.g. after tab switch)
+    const dt = Math.min(elapsed / TARGET_FRAME_MS, 3);
+
     // Advance world
     if (!arrivedRef.current) {
-      worldXRef.current += WALK_SPEED;
+      worldXRef.current += WALK_SPEED * dt;
     }
 
     // Jump physics
     if (!isGroundedRef.current) {
-      jumpOffsetRef.current += jumpVelRef.current;
-      jumpVelRef.current += GRAVITY;
+      jumpOffsetRef.current += jumpVelRef.current * dt;
+      jumpVelRef.current += GRAVITY * dt;
       if (jumpOffsetRef.current >= 0) {
         jumpOffsetRef.current = 0;
         jumpVelRef.current = 0;
         isGroundedRef.current = true;
+        canDoubleJumpRef.current = true;
       }
     }
 
     const worldX = worldXRef.current;
-    frameRef.current += 1;
+    frameRef.current += dt;
     const walkFrame = Math.floor(frameRef.current / 8); // animation speed
 
     // Clear
@@ -211,7 +272,7 @@ export default function Game({ stage = 0, onArrive }) {
 
       // Collection animation (pop effect)
       if (heart.collected && heart.popFrame > 0) {
-        heart.popFrame -= 1;
+        heart.popFrame -= dt;
         const alpha = heart.popFrame / 15;
         const rise = (15 - heart.popFrame) * 2;
         ctx.globalAlpha = alpha;
@@ -279,6 +340,40 @@ export default function Game({ stage = 0, onArrive }) {
       }
     });
 
+    // Cones
+    if (invincibleRef.current > 0) {
+      invincibleRef.current -= dt;
+    }
+    conesRef.current.forEach((cone) => {
+      if (cone.hit) return;
+      const coneScreenX = cone.worldX - worldX + CHAR_X;
+      if (coneScreenX < -20 || coneScreenX > CANVAS_W + 20) return;
+
+      drawCone(ctx, coneScreenX, CONE_Y, SCALE);
+
+      // Collision detection — only when character is on/near the ground
+      if (invincibleRef.current > 0) return;
+      const charLeft = CHAR_X;
+      const charRight = CHAR_X + CHAR_W;
+      const charBottom = charY + CHAR_H;
+      const charTop = charY;
+      const coneLeft = coneScreenX;
+      const coneRight = coneScreenX + CONE_W;
+      const coneTop = CONE_Y;
+      const coneBottom = CONE_Y + CONE_H;
+
+      if (charRight > coneLeft && charLeft < coneRight &&
+          charBottom > coneTop && charTop < coneBottom) {
+        cone.hit = true;
+        livesRef.current = Math.max(0, livesRef.current - 1);
+        setLives(livesRef.current);
+        invincibleRef.current = INVINCIBILITY_FRAMES;
+        if (livesRef.current <= 0 && onGameOver) {
+          onGameOver();
+        }
+      }
+    });
+
     // Ground / street
     drawGround(ctx, worldX, CANVAS_W, CANVAS_H, SCALE);
 
@@ -312,27 +407,37 @@ export default function Game({ stage = 0, onArrive }) {
       ctx.globalAlpha = 1;
     } else {
       const charFrame = arrivedRef.current ? 0 : (isGroundedRef.current ? walkFrame : 1);
+      // Blink character when invincible (visible every other 6 frames)
+      const showChar = invincibleRef.current === 0 || Math.floor(frameRef.current / 6) % 2 === 0;
       if (isTwoPlayers) {
         // Girl jumps together with the boy
         const girlY = CHAR_Y_BASE + jumpOffsetRef.current;
         const girlFrame = arrivedRef.current ? 0 : (isGroundedRef.current ? walkFrame : 1);
         drawGirlCharacter(ctx, CHAR_X - 16 * SCALE, girlY, girlFrame, SCALE);
       }
-      drawCharacter(ctx, CHAR_X, charY, charFrame, SCALE);
+      if (showChar) {
+        drawCharacter(ctx, CHAR_X, charY, charFrame, SCALE);
+      }
     }
 
-    // Score display
-    if (scoreRef.current > 0) {
+    // Lives display (top-right)
+    ctx.font = '14px "Press Start 2P", cursive';
+    ctx.fillStyle = '#e67e22';
+    ctx.fillText('\u2666 ' + livesRef.current, CANVAS_W - 200, 30);
+
+    // Score display (total across all stages + current stage)
+    const displayScore = totalHearts + scoreRef.current;
+    if (displayScore > 0) {
       ctx.font = '14px "Press Start 2P", cursive';
       ctx.fillStyle = '#ff6b9d';
-      ctx.fillText('\u2764 ' + scoreRef.current, CANVAS_W - 100, 30);
+      ctx.fillText('\u2764 ' + displayScore, CANVAS_W - 100, 30);
     }
 
     // Check arrival
     if (!arrivedRef.current && buildingScreenX <= CHAR_X + 60) {
       arrivedRef.current = true;
       setArrived(true);
-      onArrive();
+      onArrive({ hearts: scoreRef.current, lives: livesRef.current });
     }
 
     animRef.current = requestAnimationFrame(gameLoop);

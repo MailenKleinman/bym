@@ -101,6 +101,8 @@ canvas {
   margin-top: 50px;
   z-index: 2;
   opacity: 0.7;
+  text-align: center;
+  padding: 0 20px;
 }
 
 .start-caption2 {
@@ -214,6 +216,22 @@ canvas {
   color: #f8c291;
   line-height: 2.2;
   margin-bottom: 30px;
+}
+
+.modal-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 24px;
+  font-size: 1rem;
+}
+
+.modal-stat-hearts {
+  color: #ff6b9d;
+}
+
+.modal-stat-lives {
+  color: #e67e22;
 }
 
 .modal-btn {

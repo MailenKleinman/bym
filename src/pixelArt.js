@@ -1225,6 +1225,42 @@ export function drawBackground(ctx, offsetX, canvasW, canvasH, scale = SCALE) {
   });
 }
 
+// ── Traffic cone (obstacle) ─────────────────────────────────
+export function drawCone(ctx, x, y, scale = SCALE) {
+  const s = scale;
+  const p = (px_x, px_y, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(x + px_x * s, y + px_y * s, s, s);
+  };
+
+  const ORANGE = '#e67e22';
+  const ORANGE_DARK = '#d35400';
+  const WHITE_STRIPE = '#ecf0f1';
+  const BASE = '#7f8c8d';
+
+  // Tip (row 0)
+  p(3, 0, ORANGE);
+
+  // Row 1
+  p(2, 1, ORANGE); p(3, 1, ORANGE); p(4, 1, ORANGE);
+
+  // Row 2 - white stripe
+  p(2, 2, WHITE_STRIPE); p(3, 2, WHITE_STRIPE); p(4, 2, WHITE_STRIPE);
+
+  // Row 3
+  p(1, 3, ORANGE); p(2, 3, ORANGE_DARK); p(3, 3, ORANGE); p(4, 3, ORANGE_DARK); p(5, 3, ORANGE);
+
+  // Row 4 - white stripe
+  p(1, 4, WHITE_STRIPE); p(2, 4, WHITE_STRIPE); p(3, 4, WHITE_STRIPE); p(4, 4, WHITE_STRIPE); p(5, 4, WHITE_STRIPE);
+
+  // Row 5
+  p(0, 5, ORANGE_DARK); p(1, 5, ORANGE); p(2, 5, ORANGE); p(3, 5, ORANGE_DARK); p(4, 5, ORANGE); p(5, 5, ORANGE); p(6, 5, ORANGE_DARK);
+
+  // Base (row 6-7)
+  for (let i = 0; i <= 6; i++) p(i, 6, BASE);
+  for (let i = 0; i <= 6; i++) p(i, 7, BASE);
+}
+
 // ── Lamp posts (street decoration) ─────────────────────────
 export function drawLampPost(ctx, x, y, scale = SCALE) {
   const s = scale;
@@ -1339,14 +1375,15 @@ export function drawStartPreview(canvas, frameCount) {
   const charW = 16 * scale;
   const charH = 22 * scale;
   const padding = 40;
+  const topMargin = 60; // extra space for girl's jump + heart trails
   canvas.width = charW * 2 + padding * 2 + 20;
-  canvas.height = charH + 40;
+  canvas.height = charH + topMargin + 40;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Boy stands in the center
+  // Boy stands in the center, pushed down to leave room for jump
   const boyX = Math.floor(canvas.width / 2 - charW / 2);
-  const boyY = 20;
+  const boyY = topMargin;
   drawCharacter(ctx, boyX, boyY, 0, scale);
 
   // Girl jumps/orbits around the boy
