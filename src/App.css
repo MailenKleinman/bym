@@ -102,6 +102,7 @@ canvas {
   z-index: 2;
   opacity: 0.7;
   text-align: center;
+  line-height: 2;
   padding: 0 20px;
 }
 

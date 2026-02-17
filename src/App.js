@@ -74,7 +74,7 @@ function StartScreen({ onStart }) {
       <button className="start-btn" onClick={onStart}>
         START
       </button>
-      <div className="start-caption">Presionar barra espaciadora para recolectar corazones y esquivar conos</div>
+      <div className="start-caption">Presionar barra espaciadora para recolectar corazones y esquivar conos. <br/> Presionar dos veces para saltar más alto.</div>
       <div className="start-caption2">Para Bauti de Mai - 15.02.2026</div>
     </div>
   );
@@ -124,7 +124,7 @@ const MODALS = [
   {
     title: '¡Ganaste!',
     image: '/images/modal-9.png',
-    text: 'Esto es solo el principio, no puedo esperar a todo lo que vamos a vivir. Te amo mucho amor.',
+    text: 'Esto es solo el principio, no puedo esperar a ver todo lo que nos depara ¡Te amo mucho!',
   },
 ];
 
